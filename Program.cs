@@ -1,6 +1,12 @@
+using Microsoft.EntityFrameworkCore;
+using VendorRiskScoreAPI.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+builder.Services.AddDbContext<VendorRiskScoreDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("VendorRiskScoreDb")));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

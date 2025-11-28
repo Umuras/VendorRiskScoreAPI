@@ -48,17 +48,9 @@ namespace VendorRiskScoreAPI.Data
                       .HasColumnName("major_incidents")
                       .IsRequired();
 
-                entity.Property(v => v.DocumentId)
-                      .HasColumnName("document_id")
-                      .IsRequired();
-
                 entity.HasMany(v => v.SecurityCerts)
                       .WithOne(s => s.VendorProfile)
                       .HasForeignKey(s => s.VendorId);
-
-                entity.HasOne(v => v.Document)
-                      .WithOne()
-                      .HasForeignKey<VendorProfile>(v => v.DocumentId);
             });
         }
 
@@ -110,6 +102,15 @@ namespace VendorRiskScoreAPI.Data
                 entity.Property(d => d.PentestReportValid)
                       .HasColumnName("pentest_report_valid")
                       .IsRequired();
+
+                entity.Property(d => d.VendorId)
+                     .IsRequired()
+                     .HasColumnName("vendor_id");
+
+                entity.HasOne(d => d.VendorProfile)
+                      .WithOne(v => v.Document)
+                      .HasForeignKey<Document>(d => d.VendorId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
         }
 
@@ -139,7 +140,8 @@ namespace VendorRiskScoreAPI.Data
 
                 entity.HasOne(r => r.VendorProfile)
                       .WithOne(v => v.RiskAssessment)
-                      .HasForeignKey<RiskAssessment>(r => r.VendorId);
+                      .HasForeignKey<RiskAssessment>(r => r.VendorId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

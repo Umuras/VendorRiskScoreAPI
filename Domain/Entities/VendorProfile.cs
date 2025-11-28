@@ -14,9 +14,6 @@ namespace VendorRiskScoreAPI.Domain.Entities
         
         //Navigation Property
         public Document Document { get; set; }
-        //Foreign Key
-        public int DocumentId { get; set; }
-
         //Navigation Property
         public RiskAssessment RiskAssessment { get; set; }
     }

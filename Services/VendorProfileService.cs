@@ -12,14 +12,16 @@ namespace VendorRiskScoreAPI.Services
         private readonly VendorRiskScoreDbContext _context;
         private readonly IRuleEngineService _ruleEngineService;
         private readonly IRiskAssessmentService _riskAssessmentService;
+        private readonly IDocumentService _documentService;
 
         public VendorProfileService(IVendorProfileRepository vendorProfileRepository, VendorRiskScoreDbContext context,
-            IRuleEngineService ruleEngineService, IRiskAssessmentService riskAssessmentService)
+            IRuleEngineService ruleEngineService, IRiskAssessmentService riskAssessmentService, IDocumentService documentService)
         {
             _vendorProfileRepository = vendorProfileRepository;
             _context = context;
             _ruleEngineService = ruleEngineService;
             _riskAssessmentService = riskAssessmentService;
+            _documentService = documentService;
         }
 
         public async Task<List<VendorProfile>> GetVendorProfilesAsync()
@@ -106,14 +108,15 @@ namespace VendorRiskScoreAPI.Services
                 vendorSecurityCerts.Add(new VendorSecurityCert() { CertName = certifacateName });
             }
 
-            Document document = new Document();
-            document.ContractValid = vendorProfileRequest.Documents.ContractValid;
-            document.PrivacyPolicyValid = vendorProfileRequest.Documents.PrivacyPolicyValid;
-            document.PentestReportValid = vendorProfileRequest.Documents.PentestReportValid;
-
             VendorProfile dbVendorProfile = await GetVendorProfileByIdAsync(id);
 
-            if(vendorProfileRequest.Name != null)
+            Document dbDocument = await _documentService.GetDocumentByIdAsync(dbVendorProfile.Document.Id);
+            dbDocument.ContractValid = vendorProfileRequest.Documents.ContractValid;
+            dbDocument.PrivacyPolicyValid = vendorProfileRequest.Documents.PrivacyPolicyValid;
+            dbDocument.PentestReportValid = vendorProfileRequest.Documents.PentestReportValid;
+
+
+            if (vendorProfileRequest.Name != null)
             {
                 dbVendorProfile.Name = vendorProfileRequest.Name;
             }
@@ -140,17 +143,17 @@ namespace VendorRiskScoreAPI.Services
 
             if(vendorProfileRequest.Documents != null)
             {
-                dbVendorProfile.Document = document;
+                dbVendorProfile.Document = dbDocument;
             }
 
-            RiskAssessment riskAssessment = new RiskAssessment();
+            RiskAssessment dbRiskAssessment = await _riskAssessmentService.GetRiskAssessmentByIdAsync(dbVendorProfile.RiskAssessment.Id);
             double finalScore = _riskAssessmentService.CalculateFinalScore(vendorProfileRequest.FinancialHealth, vendorProfileRequest.SlaUptime, vendorProfileRequest.MajorIncidents,
-                vendorSecurityCerts, document);
+                vendorSecurityCerts, dbDocument);
 
-            riskAssessment.RiskScore = (float)finalScore;
-            riskAssessment.RiskLevel = _riskAssessmentService.CalculateRiskLevel(finalScore);
+            dbRiskAssessment.RiskScore = (float)finalScore;
+            dbRiskAssessment.RiskLevel = _riskAssessmentService.CalculateRiskLevel(finalScore);
 
-            dbVendorProfile.RiskAssessment = riskAssessment;
+            dbVendorProfile.RiskAssessment = dbRiskAssessment;
 
             using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
             try

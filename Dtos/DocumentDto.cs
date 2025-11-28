@@ -1,6 +1,6 @@
 ﻿namespace VendorRiskScoreAPI.Dtos
 {
-    public class DocumentRequestDto
+    public class DocumentDto
     {
         public bool ContractValid { get; set; }
         public bool PrivacyPolicyValid { get; set; }

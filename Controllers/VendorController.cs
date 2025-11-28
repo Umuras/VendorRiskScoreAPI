@@ -22,15 +22,16 @@ namespace VendorRiskScoreAPI.Controllers
         public async Task<IActionResult> GetAllVendorProfiles()
         {
             List<VendorProfile> vendorProfiles = await _vendorProfileService.GetVendorProfilesAsync();
-
-            return Ok(vendorProfiles);
+            List<VendorProfileDto> vendorProfileDtos = vendorProfiles.Select(_vendorProfileService.CreateVendorProfileDto).ToList();
+            return Ok(vendorProfileDtos);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetVendorProfileById(int id)
         {
             VendorProfile vendorProfile = await _vendorProfileService.GetVendorProfileByIdAsync(id);
-            return Ok(vendorProfile);
+            VendorProfileDto vendorProfileDto = _vendorProfileService.CreateVendorProfileDto(vendorProfile);
+            return Ok(vendorProfileDto);
         }
 
         [HttpGet("{vendorId}/risk")]
@@ -42,7 +43,7 @@ namespace VendorRiskScoreAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddVendorProfile([FromBody] VendorProfileRequestDto vendorProfile)
+        public async Task<IActionResult> AddVendorProfile([FromBody] VendorProfileDto vendorProfile)
         {
             if(!ModelState.IsValid)
             {
@@ -55,7 +56,7 @@ namespace VendorRiskScoreAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateVendorProfile(int id, [FromBody] VendorProfileRequestDto vendorProfile)
+        public async Task<IActionResult> UpdateVendorProfile(int id, [FromBody] VendorProfileDto vendorProfile)
         {
             if (!ModelState.IsValid)
             {

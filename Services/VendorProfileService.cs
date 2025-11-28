@@ -40,7 +40,7 @@ namespace VendorRiskScoreAPI.Services
             return vendorProfile;
         }
 
-        public async Task<VendorProfile> AddVendorProfileAsync(VendorProfileRequestDto vendorProfileRequest)
+        public async Task<VendorProfile> AddVendorProfileAsync(VendorProfileDto vendorProfileRequest)
         {
             if(vendorProfileRequest == null)
             {
@@ -60,7 +60,7 @@ namespace VendorRiskScoreAPI.Services
 
 
             RiskAssessment riskAssessment = new RiskAssessment();
-            double finalScore = _riskAssessmentService.CalculateFinalScore(vendorProfileRequest.FinancialHealth, vendorProfileRequest.SlaUpTime, vendorProfileRequest.MajorIncidents,
+            double finalScore = _riskAssessmentService.CalculateFinalScore(vendorProfileRequest.FinancialHealth, vendorProfileRequest.SlaUptime, vendorProfileRequest.MajorIncidents,
                 vendorSecurityCerts, document);
 
             riskAssessment.RiskScore = (float)finalScore;
@@ -71,7 +71,7 @@ namespace VendorRiskScoreAPI.Services
                 Name = vendorProfileRequest.Name,
                 FinancialHealth = vendorProfileRequest.FinancialHealth,
                 MajorIncidents = vendorProfileRequest.MajorIncidents,
-                SlaUpTime = vendorProfileRequest.SlaUpTime,
+                SlaUpTime = vendorProfileRequest.SlaUptime,
                 Document = document,
                 SecurityCerts = vendorSecurityCerts,
                 RiskAssessment = riskAssessment
@@ -93,7 +93,7 @@ namespace VendorRiskScoreAPI.Services
             }
         }
 
-        public async Task UpdateVendorProfileAsync(int id, VendorProfileRequestDto vendorProfileRequest)
+        public async Task UpdateVendorProfileAsync(int id, VendorProfileDto vendorProfileRequest)
         {
             if (vendorProfileRequest == null)
             {
@@ -128,9 +128,9 @@ namespace VendorRiskScoreAPI.Services
                 dbVendorProfile.FinancialHealth = vendorProfileRequest.FinancialHealth;
             }
 
-            if(vendorProfileRequest.SlaUpTime != dbVendorProfile.SlaUpTime && vendorProfileRequest.SlaUpTime > 0)
+            if(vendorProfileRequest.SlaUptime != dbVendorProfile.SlaUpTime && vendorProfileRequest.SlaUptime > 0)
             {
-                dbVendorProfile.SlaUpTime = vendorProfileRequest.SlaUpTime;
+                dbVendorProfile.SlaUpTime = vendorProfileRequest.SlaUptime;
             }
 
             if(vendorProfileRequest.MajorIncidents != dbVendorProfile.MajorIncidents && vendorProfileRequest.MajorIncidents >= 0)
@@ -144,7 +144,7 @@ namespace VendorRiskScoreAPI.Services
             }
 
             RiskAssessment riskAssessment = new RiskAssessment();
-            double finalScore = _riskAssessmentService.CalculateFinalScore(vendorProfileRequest.FinancialHealth, vendorProfileRequest.SlaUpTime, vendorProfileRequest.MajorIncidents,
+            double finalScore = _riskAssessmentService.CalculateFinalScore(vendorProfileRequest.FinancialHealth, vendorProfileRequest.SlaUptime, vendorProfileRequest.MajorIncidents,
                 vendorSecurityCerts, document);
 
             riskAssessment.RiskScore = (float)finalScore;
@@ -206,6 +206,34 @@ namespace VendorRiskScoreAPI.Services
                 (vendorProfileRiskScoreResponseDto.Security * 0.3);
 
             return vendorProfileRiskScoreResponseDto;
+        }
+
+        public VendorProfileDto CreateVendorProfileDto(VendorProfile vendorProfile)
+        {
+            List<string> securityCerts = new List<string>();
+            foreach (VendorSecurityCert cert in vendorProfile.SecurityCerts)
+            {
+                securityCerts.Add(cert.CertName);
+            }
+
+            DocumentDto documentDto = new DocumentDto()
+            {
+                ContractValid = vendorProfile.Document.ContractValid,
+                PrivacyPolicyValid = vendorProfile.Document.PrivacyPolicyValid,
+                PentestReportValid = vendorProfile.Document.PentestReportValid
+            };
+
+            VendorProfileDto vendorProfileDto = new VendorProfileDto()
+            {
+                Name = vendorProfile.Name,
+                FinancialHealth = vendorProfile.FinancialHealth,
+                MajorIncidents = vendorProfile.MajorIncidents,
+                SlaUptime = vendorProfile.SlaUpTime,
+                Documents = documentDto,
+                SecurityCerts = securityCerts
+            };
+
+            return vendorProfileDto;
         }
     }
 }

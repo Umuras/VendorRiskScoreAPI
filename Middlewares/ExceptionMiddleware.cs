@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text.Json;
+using VendorRiskScoreAPI.Exceptions;
 
 namespace VendorRiskScoreAPI.Middlewares
 {
@@ -83,6 +84,7 @@ namespace VendorRiskScoreAPI.Middlewares
                 KeyNotFoundException => HttpStatusCode.NotFound, //404
                 ArgumentNullException => HttpStatusCode.BadRequest, //400
                 InvalidOperationException => HttpStatusCode.Conflict, //409
+                DuplicateVendorProfileNameException => HttpStatusCode.BadRequest,
                 _ => HttpStatusCode.InternalServerError //500(genel hata)
             };
 

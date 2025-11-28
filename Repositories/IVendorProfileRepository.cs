@@ -9,5 +9,6 @@ namespace VendorRiskScoreAPI.Repositories
         Task<VendorProfile> AddVendorProfileAsync(VendorProfile vendorProfile);
         Task UpdateVendorProfileAsync(VendorProfile vendorProfile);
         Task DeleteVendorProfile(VendorProfile vendorProfile);
+        Task<bool> VendorProfileExistsByNameAsync(string name);
     }
 }

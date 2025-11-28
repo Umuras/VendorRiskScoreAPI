@@ -41,5 +41,11 @@ namespace VendorRiskScoreAPI.Repositories
             _context.VendorProfiles.Remove(vendorProfile);
             return Task.CompletedTask;
         }
+
+        public async Task<bool> VendorProfileExistsByNameAsync(string name)
+        {
+            bool result = await _context.VendorProfiles.AnyAsync(vp => vp.Name.ToLower() == name.ToLower());
+            return result;
+        }
     }
 }

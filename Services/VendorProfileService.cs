@@ -1,7 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore.Storage;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore.Storage;
 using VendorRiskScoreAPI.Data;
 using VendorRiskScoreAPI.Domain.Entities;
 using VendorRiskScoreAPI.Dtos;
+using VendorRiskScoreAPI.Exceptions;
 using VendorRiskScoreAPI.Repositories;
 
 namespace VendorRiskScoreAPI.Services
@@ -48,6 +50,13 @@ namespace VendorRiskScoreAPI.Services
             {
                 throw new ArgumentNullException("VendorProfile cannot be null");
             }
+
+            bool vendorProfileExistWithSameName = await _vendorProfileRepository.VendorProfileExistsByNameAsync(vendorProfileRequest.Name);
+            if (vendorProfileExistWithSameName)
+            {
+                throw new DuplicateVendorProfileNameException($"{vendorProfileRequest.Name}");
+            }
+
 
             Document document = new Document();
             document.ContractValid = vendorProfileRequest.Documents.ContractValid;

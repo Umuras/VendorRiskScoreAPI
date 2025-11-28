@@ -186,7 +186,7 @@ namespace VendorRiskScoreAPI.Services
             }
         }
 
-        public VendorProfileResponseDto ChangeVendorProfileResponseDto(VendorProfile vendorProfile)
+        public VendorProfileRiskScoreResponseDto CreateVendorProfileRiskScoreResponseDto(VendorProfile vendorProfile)
         {
             List<VendorSecurityCert> vendorSecurityCerts = new List<VendorSecurityCert>();
             foreach (VendorSecurityCert item in vendorProfile.SecurityCerts)
@@ -194,7 +194,7 @@ namespace VendorRiskScoreAPI.Services
                 vendorSecurityCerts.Add(new VendorSecurityCert() { CertName = item.CertName });
             }
 
-            VendorProfileResponseDto vendorProfileResponseDto = new VendorProfileResponseDto()
+            VendorProfileRiskScoreResponseDto vendorProfileRiskScoreResponseDto = new VendorProfileRiskScoreResponseDto()
             {
                 Vendor = vendorProfile.Name,
                 Financial = _ruleEngineService.CalculateFinancialRisk(vendorProfile.FinancialHealth),
@@ -202,10 +202,10 @@ namespace VendorRiskScoreAPI.Services
                 Security = _ruleEngineService.CalculateSecurityComplianceRisk(vendorSecurityCerts, vendorProfile.Document)
             };
 
-            vendorProfileResponseDto.FinalScore = (vendorProfileResponseDto.Financial * 0.4) + (vendorProfileResponseDto.Operational * 0.3) +
-                (vendorProfileResponseDto.Security * 0.3);
+            vendorProfileRiskScoreResponseDto.FinalScore = (vendorProfileRiskScoreResponseDto.Financial * 0.4) + (vendorProfileRiskScoreResponseDto.Operational * 0.3) +
+                (vendorProfileRiskScoreResponseDto.Security * 0.3);
 
-            return vendorProfileResponseDto;
+            return vendorProfileRiskScoreResponseDto;
         }
     }
 }

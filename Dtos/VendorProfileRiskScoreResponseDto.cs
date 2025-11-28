@@ -1,6 +1,6 @@
 ﻿namespace VendorRiskScoreAPI.Dtos
 {
-    public class VendorProfileResponseDto
+    public class VendorProfileRiskScoreResponseDto
     {
         public string Vendor { get; set; }
         public double Financial { get; set; }

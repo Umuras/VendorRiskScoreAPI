@@ -10,6 +10,6 @@ namespace VendorRiskScoreAPI.Services
         Task<VendorProfile> AddVendorProfileAsync(VendorProfileRequestDto vendorProfile);
         Task UpdateVendorProfileAsync(int id, VendorProfileRequestDto vendorProfile);
         Task DeleteVendorProfile(int id);
-        VendorProfileResponseDto ChangeVendorProfileResponseDto(VendorProfile vendorProfile);
+        VendorProfileRiskScoreResponseDto CreateVendorProfileRiskScoreResponseDto(VendorProfile vendorProfile);
     }
 }

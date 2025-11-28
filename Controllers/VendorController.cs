@@ -59,9 +59,9 @@ namespace VendorRiskScoreAPI.Controllers
             }
             _logger.LogInformation("Adding VendorProfile operation is starting...");
             VendorProfile dbvendorProfile = await _vendorProfileService.AddVendorProfileAsync(vendorProfile);
-            VendorProfileRiskScoreResponseDto vendorProfileRiskScoreResponseDto = _vendorProfileService.CreateVendorProfileRiskScoreResponseDto(dbvendorProfile);
+            RiskAssessmentResponseDto responseDto = await _riskAssessmentService.CreateRiskAssessmentResult(dbvendorProfile);
             _logger.LogInformation("Added VendorProfile successfully");
-            return CreatedAtAction(nameof(GetVendorProfileById), new { id = dbvendorProfile.Id }, vendorProfileRiskScoreResponseDto);
+            return CreatedAtAction(nameof(GetVendorProfileById), new { id = dbvendorProfile.Id }, responseDto);
         }
 
         [HttpPut("{id}")]

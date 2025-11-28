@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using VendorRiskScoreAPI.Data;
 using VendorRiskScoreAPI.Domain.Entities;
 using VendorRiskScoreAPI.Dtos;
+using VendorRiskScoreAPI.Enums;
 using VendorRiskScoreAPI.Exceptions;
 using VendorRiskScoreAPI.Repositories;
 
@@ -15,6 +16,7 @@ namespace VendorRiskScoreAPI.Services
         private readonly IRuleEngineService _ruleEngineService;
         private readonly IRiskAssessmentService _riskAssessmentService;
         private readonly IDocumentService _documentService;
+        private HashSet<string> allowedCertifacates = new HashSet<string>();
 
         public VendorProfileService(IVendorProfileRepository vendorProfileRepository, VendorRiskScoreDbContext context,
             IRuleEngineService ruleEngineService, IRiskAssessmentService riskAssessmentService, IDocumentService documentService)
@@ -24,6 +26,14 @@ namespace VendorRiskScoreAPI.Services
             _ruleEngineService = ruleEngineService;
             _riskAssessmentService = riskAssessmentService;
             _documentService = documentService;
+            Init();
+        }
+
+        private void Init()
+        {
+            allowedCertifacates.Add(SecurityCertificates.ISO27001.ToString());
+            allowedCertifacates.Add(SecurityCertificates.SOC2.ToString());
+            allowedCertifacates.Add(SecurityCertificates.PCI_DSS.ToString());
         }
 
         public async Task<List<VendorProfile>> GetVendorProfilesAsync()
@@ -51,12 +61,7 @@ namespace VendorRiskScoreAPI.Services
                 throw new ArgumentNullException("VendorProfile cannot be null");
             }
 
-            bool vendorProfileExistWithSameName = await _vendorProfileRepository.VendorProfileExistsByNameAsync(vendorProfileRequest.Name);
-            if (vendorProfileExistWithSameName)
-            {
-                throw new DuplicateVendorProfileNameException($"{vendorProfileRequest.Name}");
-            }
-
+            await VendorProfileSameNameControl(vendorProfileRequest.Name);
 
             Document document = new Document();
             document.ContractValid = vendorProfileRequest.Documents.ContractValid;
@@ -64,11 +69,7 @@ namespace VendorRiskScoreAPI.Services
             document.PentestReportValid = vendorProfileRequest.Documents.PentestReportValid;
 
             List<VendorSecurityCert> vendorSecurityCerts = new List<VendorSecurityCert>();
-            foreach (string certifacateName in vendorProfileRequest.SecurityCerts)
-            {
-                vendorSecurityCerts.Add(new VendorSecurityCert() { CertName = certifacateName});
-            }
-
+            vendorSecurityCerts = CheckVendorProfileSecurityCertificates(vendorProfileRequest);
 
             RiskAssessment riskAssessment = new RiskAssessment();
             double finalScore = _riskAssessmentService.CalculateFinalScore(vendorProfileRequest.FinancialHealth, vendorProfileRequest.SlaUptime, vendorProfileRequest.MajorIncidents,
@@ -112,10 +113,7 @@ namespace VendorRiskScoreAPI.Services
             }
 
             List<VendorSecurityCert> vendorSecurityCerts = new List<VendorSecurityCert>();
-            foreach (string certifacateName in vendorProfileRequest.SecurityCerts)
-            {
-                vendorSecurityCerts.Add(new VendorSecurityCert() { CertName = certifacateName });
-            }
+            vendorSecurityCerts = CheckVendorProfileSecurityCertificates(vendorProfileRequest);
 
             VendorProfile dbVendorProfile = await GetVendorProfileByIdAsync(id);
 
@@ -125,8 +123,9 @@ namespace VendorRiskScoreAPI.Services
             dbDocument.PentestReportValid = vendorProfileRequest.Documents.PentestReportValid;
 
 
-            if (vendorProfileRequest.Name != null)
+            if (vendorProfileRequest.Name != null && vendorProfileRequest.Name != dbVendorProfile.Name)
             {
+                await VendorProfileSameNameControl(vendorProfileRequest.Name);
                 dbVendorProfile.Name = vendorProfileRequest.Name;
             }
 
@@ -246,6 +245,47 @@ namespace VendorRiskScoreAPI.Services
             };
 
             return vendorProfileDto;
+        }
+
+        private async Task VendorProfileSameNameControl(string name)
+        {
+            bool vendorProfileExistWithSameName = await _vendorProfileRepository.VendorProfileExistsByNameAsync(name);
+            if (vendorProfileExistWithSameName)
+            {
+                throw new DuplicateVendorProfileNameException($"{name}");
+            }
+        }
+
+        private List<VendorSecurityCert> CheckVendorProfileSecurityCertificates(VendorProfileDto vendorProfileRequest)
+        {
+            List<VendorSecurityCert> vendorSecurityCerts = new List<VendorSecurityCert>();
+            vendorProfileRequest.SecurityCerts = vendorProfileRequest.SecurityCerts.
+                Where(s => !string.IsNullOrEmpty(s)).Distinct().ToList();
+
+            if (vendorProfileRequest.SecurityCerts.Count() > 3)
+            {
+                throw new ArgumentException($"You can only add 3 quantities certifacates");
+            }
+
+            foreach (string certifacateName in vendorProfileRequest.SecurityCerts)
+            {
+                if (certifacateName != string.Empty)
+                {
+                    if (!allowedCertifacates.Contains(certifacateName))
+                    {
+                        throw new ArgumentException($"You can only add this 3 certifacates: {SecurityCertificates.ISO27001.ToString()}, " +
+                            $"{SecurityCertificates.PCI_DSS.ToString()}, {SecurityCertificates.SOC2.ToString()}");
+                    }
+                }
+                else
+                {
+                    continue;
+                }
+
+                vendorSecurityCerts.Add(new VendorSecurityCert() { CertName = certifacateName });
+            }
+
+            return vendorSecurityCerts;
         }
     }
 }

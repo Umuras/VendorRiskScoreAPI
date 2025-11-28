@@ -85,6 +85,7 @@ namespace VendorRiskScoreAPI.Middlewares
                 ArgumentNullException => HttpStatusCode.BadRequest, //400
                 InvalidOperationException => HttpStatusCode.Conflict, //409
                 DuplicateVendorProfileNameException => HttpStatusCode.BadRequest,
+                ArgumentException => HttpStatusCode.BadRequest,
                 _ => HttpStatusCode.InternalServerError //500(genel hata)
             };
 

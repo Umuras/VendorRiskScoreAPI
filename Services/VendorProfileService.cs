@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
 using VendorRiskScoreAPI.Data;
 using VendorRiskScoreAPI.Domain.Entities;
+using VendorRiskScoreAPI.Dtos;
 using VendorRiskScoreAPI.Repositories;
 
 namespace VendorRiskScoreAPI.Services
@@ -9,11 +10,16 @@ namespace VendorRiskScoreAPI.Services
     {
         private readonly IVendorProfileRepository _vendorProfileRepository;
         private readonly VendorRiskScoreDbContext _context;
+        private readonly IRuleEngineService _ruleEngineService;
+        private readonly IRiskAssessmentService _riskAssessmentService;
 
-        public VendorProfileService(IVendorProfileRepository vendorProfileRepository, VendorRiskScoreDbContext context)
+        public VendorProfileService(IVendorProfileRepository vendorProfileRepository, VendorRiskScoreDbContext context,
+            IRuleEngineService ruleEngineService, IRiskAssessmentService riskAssessmentService)
         {
             _vendorProfileRepository = vendorProfileRepository;
             _context = context;
+            _ruleEngineService = ruleEngineService;
+            _riskAssessmentService = riskAssessmentService;
         }
 
         public async Task<List<VendorProfile>> GetVendorProfilesAsync()
@@ -34,12 +40,42 @@ namespace VendorRiskScoreAPI.Services
             return vendorProfile;
         }
 
-        public async Task<VendorProfile> AddVendorProfileAsync(VendorProfile vendorProfile)
+        public async Task<VendorProfile> AddVendorProfileAsync(VendorProfileRequestDto vendorProfileRequest)
         {
-            if(vendorProfile == null)
+            if(vendorProfileRequest == null)
             {
                 throw new ArgumentNullException("VendorProfile cannot be null");
             }
+
+            Document document = new Document();
+            document.ContractValid = vendorProfileRequest.Documents.ContractValid;
+            document.PrivacyPolicyValid = vendorProfileRequest.Documents.PrivacyPolicyValid;
+            document.PentestReportValid = vendorProfileRequest.Documents.PentestReportValid;
+
+            List<VendorSecurityCert> vendorSecurityCerts = new List<VendorSecurityCert>();
+            foreach (string certifacateName in vendorProfileRequest.SecurityCerts)
+            {
+                vendorSecurityCerts.Add(new VendorSecurityCert() { CertName = certifacateName});
+            }
+
+
+            RiskAssessment riskAssessment = new RiskAssessment();
+            double finalScore = _riskAssessmentService.CalculateFinalScore(vendorProfileRequest.FinancialHealth, vendorProfileRequest.SlaUpTime, vendorProfileRequest.MajorIncidents,
+                vendorSecurityCerts, document);
+
+            riskAssessment.RiskScore = (float)finalScore;
+            riskAssessment.RiskLevel = _riskAssessmentService.CalculateRiskLevel(finalScore);
+
+            VendorProfile vendorProfile = new VendorProfile()
+            {
+                Name = vendorProfileRequest.Name,
+                FinancialHealth = vendorProfileRequest.FinancialHealth,
+                MajorIncidents = vendorProfileRequest.MajorIncidents,
+                SlaUpTime = vendorProfileRequest.SlaUpTime,
+                Document = document,
+                SecurityCerts = vendorSecurityCerts,
+                RiskAssessment = riskAssessment
+            };
 
             using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -57,44 +93,64 @@ namespace VendorRiskScoreAPI.Services
             }
         }
 
-        public async Task UpdateVendorProfileAsync(int id, VendorProfile vendorProfile)
+        public async Task UpdateVendorProfileAsync(int id, VendorProfileRequestDto vendorProfileRequest)
         {
-            if (vendorProfile == null)
+            if (vendorProfileRequest == null)
             {
                 throw new ArgumentNullException("VendorProfile cannot be null");
             }
 
+            List<VendorSecurityCert> vendorSecurityCerts = new List<VendorSecurityCert>();
+            foreach (string certifacateName in vendorProfileRequest.SecurityCerts)
+            {
+                vendorSecurityCerts.Add(new VendorSecurityCert() { CertName = certifacateName });
+            }
+
+            Document document = new Document();
+            document.ContractValid = vendorProfileRequest.Documents.ContractValid;
+            document.PrivacyPolicyValid = vendorProfileRequest.Documents.PrivacyPolicyValid;
+            document.PentestReportValid = vendorProfileRequest.Documents.PentestReportValid;
+
             VendorProfile dbVendorProfile = await GetVendorProfileByIdAsync(id);
 
-            if(vendorProfile.Name != null)
+            if(vendorProfileRequest.Name != null)
             {
-                dbVendorProfile.Name = vendorProfile.Name;
+                dbVendorProfile.Name = vendorProfileRequest.Name;
             }
 
-            if(vendorProfile.SecurityCerts != null)
+            if(vendorProfileRequest.SecurityCerts != null)
             {
-                dbVendorProfile.SecurityCerts = vendorProfile.SecurityCerts;
+                dbVendorProfile.SecurityCerts = vendorSecurityCerts;
             }
 
-            if(vendorProfile.FinancialHealth != dbVendorProfile.FinancialHealth && vendorProfile.FinancialHealth > 0)
+            if(vendorProfileRequest.FinancialHealth != dbVendorProfile.FinancialHealth && vendorProfileRequest.FinancialHealth > 0)
             {
-                dbVendorProfile.FinancialHealth = vendorProfile.FinancialHealth;
+                dbVendorProfile.FinancialHealth = vendorProfileRequest.FinancialHealth;
             }
 
-            if(vendorProfile.SlaUpTime != dbVendorProfile.SlaUpTime && vendorProfile.SlaUpTime > 0)
+            if(vendorProfileRequest.SlaUpTime != dbVendorProfile.SlaUpTime && vendorProfileRequest.SlaUpTime > 0)
             {
-                dbVendorProfile.SlaUpTime = vendorProfile.SlaUpTime;
+                dbVendorProfile.SlaUpTime = vendorProfileRequest.SlaUpTime;
             }
 
-            if(vendorProfile.MajorIncidents != dbVendorProfile.MajorIncidents && vendorProfile.MajorIncidents > 0)
+            if(vendorProfileRequest.MajorIncidents != dbVendorProfile.MajorIncidents && vendorProfileRequest.MajorIncidents >= 0)
             {
-                dbVendorProfile.MajorIncidents = vendorProfile.MajorIncidents;
+                dbVendorProfile.MajorIncidents = vendorProfileRequest.MajorIncidents;
             }
 
-            if(vendorProfile.Document != null)
+            if(vendorProfileRequest.Documents != null)
             {
-                dbVendorProfile.Document = vendorProfile.Document;
+                dbVendorProfile.Document = document;
             }
+
+            RiskAssessment riskAssessment = new RiskAssessment();
+            double finalScore = _riskAssessmentService.CalculateFinalScore(vendorProfileRequest.FinancialHealth, vendorProfileRequest.SlaUpTime, vendorProfileRequest.MajorIncidents,
+                vendorSecurityCerts, document);
+
+            riskAssessment.RiskScore = (float)finalScore;
+            riskAssessment.RiskLevel = _riskAssessmentService.CalculateRiskLevel(finalScore);
+
+            dbVendorProfile.RiskAssessment = riskAssessment;
 
             using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -128,6 +184,28 @@ namespace VendorRiskScoreAPI.Services
                 await transaction.RollbackAsync();
                 throw;
             }
+        }
+
+        public VendorProfileResponseDto ChangeVendorProfileResponseDto(VendorProfile vendorProfile)
+        {
+            List<VendorSecurityCert> vendorSecurityCerts = new List<VendorSecurityCert>();
+            foreach (VendorSecurityCert item in vendorProfile.SecurityCerts)
+            {
+                vendorSecurityCerts.Add(new VendorSecurityCert() { CertName = item.CertName });
+            }
+
+            VendorProfileResponseDto vendorProfileResponseDto = new VendorProfileResponseDto()
+            {
+                Vendor = vendorProfile.Name,
+                Financial = _ruleEngineService.CalculateFinancialRisk(vendorProfile.FinancialHealth),
+                Operational = _ruleEngineService.CalculateOperationalRisk(vendorProfile.SlaUpTime, vendorProfile.MajorIncidents),
+                Security = _ruleEngineService.CalculateSecurityComplianceRisk(vendorSecurityCerts, vendorProfile.Document)
+            };
+
+            vendorProfileResponseDto.FinalScore = (vendorProfileResponseDto.Financial * 0.4) + (vendorProfileResponseDto.Operational * 0.3) +
+                (vendorProfileResponseDto.Security * 0.3);
+
+            return vendorProfileResponseDto;
         }
     }
 }

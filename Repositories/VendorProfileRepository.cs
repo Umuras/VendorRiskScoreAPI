@@ -15,12 +15,12 @@ namespace VendorRiskScoreAPI.Repositories
 
         public async Task<List<VendorProfile>> GetVendorProfilesAsync()
         {
-            return await _context.VendorProfiles.Include(v => v.Document).Include(v => v.SecurityCerts).ToListAsync();
+            return await _context.VendorProfiles.Include(v => v.Document).Include(v => v.SecurityCerts).Include(v => v.RiskAssessment).ToListAsync();
         }
 
         public async Task<VendorProfile> GetVendorProfileByIdAsync(int id)
         {
-            VendorProfile? vendorProfile = await _context.VendorProfiles.Include(v => v.Document).Include(v => v.SecurityCerts).FirstOrDefaultAsync(v => v.Id == id);
+            VendorProfile? vendorProfile = await _context.VendorProfiles.Include(v => v.Document).Include(v => v.SecurityCerts).Include(v => v.RiskAssessment).FirstOrDefaultAsync(v => v.Id == id);
             return vendorProfile;
         }
 

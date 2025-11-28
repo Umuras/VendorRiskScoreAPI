@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using VendorRiskScoreAPI.Domain.Entities;
+using VendorRiskScoreAPI.Dtos;
 using VendorRiskScoreAPI.Services;
 
 namespace VendorRiskScoreAPI.Controllers
@@ -9,10 +10,12 @@ namespace VendorRiskScoreAPI.Controllers
     public class VendorController : ControllerBase
     {
         private readonly IVendorProfileService _vendorProfileService;
+        private readonly IRiskAssessmentService _riskAssessmentService;
 
-        public VendorController(IVendorProfileService vendorProfileService)
+        public VendorController(IVendorProfileService vendorProfileService, IRiskAssessmentService riskAssessmentService)
         {
             _vendorProfileService = vendorProfileService;
+            _riskAssessmentService = riskAssessmentService;
         }
 
         [HttpGet]
@@ -33,11 +36,13 @@ namespace VendorRiskScoreAPI.Controllers
         [HttpGet("{vendorId}/risk")]
         public async Task<IActionResult> GetVendorProfileRiskResult(int vendorId)
         {
-            return Ok();
+            VendorProfile vendorProfile = await _vendorProfileService.GetVendorProfileByIdAsync(vendorId);
+            RiskAssessmentResponseDto responseDto = await _riskAssessmentService.CreateRiskAssessmentResult(vendorProfile);
+            return Ok(responseDto);
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddVendorProfile([FromBody] VendorProfile vendorProfile)
+        public async Task<IActionResult> AddVendorProfile([FromBody] VendorProfileRequestDto vendorProfile)
         {
             if(!ModelState.IsValid)
             {
@@ -45,11 +50,12 @@ namespace VendorRiskScoreAPI.Controllers
             }
 
             VendorProfile dbvendorProfile = await _vendorProfileService.AddVendorProfileAsync(vendorProfile);
-            return CreatedAtAction(nameof(GetVendorProfileById), new { id = dbvendorProfile.Id }, dbvendorProfile);
+            VendorProfileResponseDto vendorProfileResponseDto = _vendorProfileService.ChangeVendorProfileResponseDto(dbvendorProfile);
+            return CreatedAtAction(nameof(GetVendorProfileById), new { id = dbvendorProfile.Id }, vendorProfileResponseDto);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateVendorProfile(int id, [FromBody] VendorProfile vendorProfile)
+        public async Task<IActionResult> UpdateVendorProfile(int id, [FromBody] VendorProfileRequestDto vendorProfile)
         {
             if (!ModelState.IsValid)
             {

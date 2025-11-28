@@ -1,4 +1,5 @@
 ﻿using VendorRiskScoreAPI.Domain.Entities;
+using VendorRiskScoreAPI.Dtos;
 
 namespace VendorRiskScoreAPI.Services
 {
@@ -6,8 +7,9 @@ namespace VendorRiskScoreAPI.Services
     {
         Task<List<VendorProfile>> GetVendorProfilesAsync();
         Task<VendorProfile> GetVendorProfileByIdAsync(int id);
-        Task<VendorProfile> AddVendorProfileAsync(VendorProfile vendorProfile);
-        Task UpdateVendorProfileAsync(int id, VendorProfile vendorProfile);
+        Task<VendorProfile> AddVendorProfileAsync(VendorProfileRequestDto vendorProfile);
+        Task UpdateVendorProfileAsync(int id, VendorProfileRequestDto vendorProfile);
         Task DeleteVendorProfile(int id);
+        VendorProfileResponseDto ChangeVendorProfileResponseDto(VendorProfile vendorProfile);
     }
 }

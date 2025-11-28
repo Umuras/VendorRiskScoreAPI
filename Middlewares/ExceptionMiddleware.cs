@@ -30,7 +30,7 @@ namespace VendorRiskScoreAPI.Middlewares
             {
                 // Catch: Pipeline içinde herhangi bir yerde yakalanmayan hata buraya düşer.
                 // Hatanın detayını logla (stack trace dahil).
-                _logger.LogError(ex, "An unhandled exception occured");
+                _logger.LogError(ex, "Unhandled exception on {Method} {Path}", context.Request.Method, context.Request.Path);
 
                 // İstemciye döneceğimiz standartlaştırılmış JSON hata cevabını hazırla/gönder.
                 await HandleExceptionAsync(context, ex);

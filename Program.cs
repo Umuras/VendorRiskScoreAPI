@@ -1,10 +1,13 @@
 using Microsoft.EntityFrameworkCore;
+using Serilog;
+using Serilog.Formatting.Compact;
+using Serilog.Sinks.Elasticsearch;
+using Serilog.Sinks.Network;
+using Serilog.Sinks.Network.Sinks.TCP;
 using VendorRiskScoreAPI.Data;
 using VendorRiskScoreAPI.Middlewares;
 using VendorRiskScoreAPI.Repositories;
 using VendorRiskScoreAPI.Services;
-using Serilog;
-using Serilog.Formatting.Compact;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +34,7 @@ builder.Services.AddSwaggerGen();
 
 //Serilog Configuration
 Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
     .Enrich.FromLogContext()
     .WriteTo.Console()
     .WriteTo.File(new CompactJsonFormatter(), "logs/log.json", rollingInterval: RollingInterval.Day)

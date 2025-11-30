@@ -129,15 +129,15 @@ PUT Vendor Profile
 PUT /api/vendor/1
 
 {
-  "name": "",
-  "financialHealth": 0,
-  "slaUptime": 0,
-  "majorIncidents": 0,
-  "securityCerts": ["string"],
+  "name": "TechPlus",
+  "financialHealth": 60,
+  "slaUptime": 70,
+  "majorIncidents": 5,
+  "securityCerts": ["SOC2"],
   "documents": {
     "contractValid": true,
     "privacyPolicyValid": true,
-    "pentestReportValid": true
+    "pentestReportValid": false
   }
 }
 

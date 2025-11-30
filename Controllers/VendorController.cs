@@ -28,7 +28,7 @@ namespace VendorRiskScoreAPI.Controllers
         {
             _logger.LogInformation("Getting all vendor profiles...");
             List<VendorProfile> vendorProfiles = await _vendorProfileService.GetVendorProfilesAsync();
-            List<VendorProfileDto> vendorProfileDtos = vendorProfiles.Select(_vendorProfileService.CreateVendorProfileDto).ToList();
+            List<VendorProfileResponseDto> vendorProfileDtos = vendorProfiles.Select(_vendorProfileService.CreateVendorProfileDto).ToList();
             _logger.LogInformation("All Vendor Profiles got successfully.");
             return Ok(vendorProfileDtos);
         }
@@ -38,7 +38,7 @@ namespace VendorRiskScoreAPI.Controllers
         {
             _logger.LogInformation($"Getting vendor with id: {id}");
             VendorProfile vendorProfile = await _vendorProfileService.GetVendorProfileByIdAsync(id);
-            VendorProfileDto vendorProfileDto = _vendorProfileService.CreateVendorProfileDto(vendorProfile);
+            VendorProfileResponseDto vendorProfileDto = _vendorProfileService.CreateVendorProfileDto(vendorProfile);
             _logger.LogInformation($"Vendor {id} retrieved successfully");
             return Ok(vendorProfileDto);
         }
@@ -54,7 +54,7 @@ namespace VendorRiskScoreAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddVendorProfile([FromBody] VendorProfileDto vendorProfile)
+        public async Task<IActionResult> AddVendorProfile([FromBody] VendorProfileRequestDto vendorProfile)
         {
             if(!ModelState.IsValid)
             {
@@ -68,7 +68,7 @@ namespace VendorRiskScoreAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateVendorProfile(int id, [FromBody] VendorProfileDto vendorProfile)
+        public async Task<IActionResult> UpdateVendorProfile(int id, [FromBody] VendorProfileRequestDto vendorProfile)
         {
             if (!ModelState.IsValid)
             {

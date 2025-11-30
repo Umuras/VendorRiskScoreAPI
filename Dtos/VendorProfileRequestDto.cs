@@ -4,7 +4,7 @@ using VendorRiskScoreAPI.Domain.Entities;
 
 namespace VendorRiskScoreAPI.Dtos
 {
-    public class VendorProfileDto
+    public class VendorProfileRequestDto
     {
         [Required(ErrorMessage = "Name is required")]
         [StringLength(maximumLength: 25, ErrorMessage = "You can write name only 3 to 25 characters", MinimumLength = 3)]

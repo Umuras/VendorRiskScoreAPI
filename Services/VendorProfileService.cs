@@ -60,7 +60,7 @@ namespace VendorRiskScoreAPI.Services
             return vendorProfile;
         }
 
-        public async Task<VendorProfile> AddVendorProfileAsync(VendorProfileDto vendorProfileRequest)
+        public async Task<VendorProfile> AddVendorProfileAsync(VendorProfileRequestDto vendorProfileRequest)
         {
             if(vendorProfileRequest == null)
             {
@@ -125,7 +125,7 @@ namespace VendorRiskScoreAPI.Services
             }
         }
 
-        public async Task UpdateVendorProfileAsync(int id, VendorProfileDto vendorProfileRequest)
+        public async Task UpdateVendorProfileAsync(int id, VendorProfileRequestDto vendorProfileRequest)
         {
             if (vendorProfileRequest == null)
             {
@@ -248,7 +248,7 @@ namespace VendorRiskScoreAPI.Services
             return vendorProfileRiskScoreResponseDto;
         }
 
-        public VendorProfileDto CreateVendorProfileDto(VendorProfile vendorProfile)
+        public VendorProfileResponseDto CreateVendorProfileDto(VendorProfile vendorProfile)
         {
             List<string> securityCerts = new List<string>();
             foreach (VendorSecurityCert cert in vendorProfile.SecurityCerts)
@@ -263,8 +263,9 @@ namespace VendorRiskScoreAPI.Services
                 PentestReportValid = vendorProfile.Document.PentestReportValid
             };
 
-            VendorProfileDto vendorProfileDto = new VendorProfileDto()
+            VendorProfileResponseDto vendorProfileResponseDto = new VendorProfileResponseDto()
             {
+                Id = vendorProfile.Id,
                 Name = vendorProfile.Name,
                 FinancialHealth = vendorProfile.FinancialHealth,
                 MajorIncidents = vendorProfile.MajorIncidents,
@@ -273,7 +274,7 @@ namespace VendorRiskScoreAPI.Services
                 SecurityCerts = securityCerts
             };
 
-            return vendorProfileDto;
+            return vendorProfileResponseDto;
         }
 
         private async Task VendorProfileSameNameControl(string name)
@@ -285,7 +286,7 @@ namespace VendorRiskScoreAPI.Services
             }
         }
 
-        private List<VendorSecurityCert> CheckVendorProfileSecurityCertificates(VendorProfileDto vendorProfileRequest)
+        private List<VendorSecurityCert> CheckVendorProfileSecurityCertificates(VendorProfileRequestDto vendorProfileRequest)
         {
             List<VendorSecurityCert> vendorSecurityCerts = new List<VendorSecurityCert>();
             vendorProfileRequest.SecurityCerts = vendorProfileRequest.SecurityCerts.

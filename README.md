@@ -212,6 +212,12 @@ Ek Bilgiler
 - VendorProfileRiskScore entity’si, finansal, operasyonel ve güvenlik risk skorlarını tutar.
 - API, CRUD işlemleri için transaction ve veri bütünlüğü kontrolleri sağlar.
 - Response DTO’lar ve Request DTO’lar ayrı tutulur; örneğin VendorProfileResponseDto, request sırasında id gönderilemeyeceği için kullanılır.
+- SeriLog projeye eklendi. Controller üzerinde her istek için başlangıç ve bitiş logları eklendi. 
+Ayrıca RequestLoggingMiddleware sayesinde atılan requestlerin ("Incoming Request: {Method} {Path}") bu şekilde sonuçlanan requestler ise
+"Request Completed: {Method} {Path} responded {StatusCode} in {ElapsedMilliseconds}ms", bu şekilde görüntülenecek şekilde ayarlandı.
+- ExceptionMiddleware sayesinde sunucuda hata oluştuğunda sunucunun çökmemesi sağlandı.
+- DuplicateVendorProfileNameException sınıfı sayesinde aynı isimde vendorProfile oluşturmaya çalışıldığında ona özel hata fırlatılması ve
+ona özel mesaj gösterilmesi sağlandı.
 
 ### Notlar / Known Issues
 

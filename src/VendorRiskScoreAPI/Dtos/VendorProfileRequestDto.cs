@@ -26,6 +26,6 @@ namespace VendorRiskScoreAPI.Dtos
         public int MajorIncidents { get; set; }
 
         public ICollection<string> SecurityCerts { get; set; } = new List<string>();
-        public DocumentDto Documents { get; set; }
+        public DocumentDto Document { get; set; }
     }
 }

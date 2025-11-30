@@ -219,7 +219,35 @@ Ayrıca RequestLoggingMiddleware sayesinde atılan requestlerin ("Incoming Reque
 - DuplicateVendorProfileNameException sınıfı sayesinde aynı isimde vendorProfile oluşturmaya çalışıldığında ona özel hata fırlatılması ve
 ona özel mesaj gösterilmesi sağlandı.
 
-### Notlar / Known Issues
+## VendorProfileService için Unit Testleri
+
+VendorProfileService için **xUnit** ve **Moq** kullanılarak unit testleri yazılmıştır. Testler servis metodlarının doğru çalışıp çalışmadığını doğrulamaktadır.  
+
+### Yazılan Testler
+
+1. **GetAllVendorProfileServiceTest**  
+   - `GetVendorProfilesAsync` metodunun tüm vendor profilleri doğru şekilde döndürdüğünü test eder.
+
+2. **GetVendorProfileByIdServiceTest**  
+   - `GetVendorProfileByIdAsync` metodunun verilen ID’deki vendor profilini döndürdüğünü test eder.
+
+3. **GetVendorProfileByIdService_NotFound_ShouldThrow**  
+   - Geçersiz ID verildiğinde `GetVendorProfileByIdAsync` metodunun doğru şekilde exception fırlattığını test eder.
+
+4. **AddVendorProfileServiceTest**  
+   - Yeni bir vendor profilinin database’e eklenip eklenmediğini test eder.
+
+5. **UpdateVendorProfileServiceTest**  
+   - Var olan vendor profilinin tüm alanlarının güncellenebilir olduğunu test eder.
+
+6. **DeleteVendorProfileServiceTest**  
+   - Vendor profilinin silinebildiğini test eder.
+
+> Tüm testler **Moq** ile servis bağımlılıkları mocklanarak çalıştırılır, gerçek veritabanına ihtiyaç duyulmaz.
+
+
+
+Notlar / Known Issues
 
 - ELK (Elasticsearch, Logstash, Kibana) stack’i yerel ortamda çalıştırılamadı. 
 - API ve diğer modüller ELK olmadan başarılı şekilde build edilip çalıştırılabilir.

@@ -5,6 +5,7 @@ namespace VendorRiskScoreAPI.Data
 {
     public class VendorRiskScoreDbContext : DbContext
     {
+        public VendorRiskScoreDbContext() { }
         public VendorRiskScoreDbContext(DbContextOptions<VendorRiskScoreDbContext> dbContextOptions) : base(dbContextOptions) { }
 
         public DbSet<VendorProfile> VendorProfiles { get; set; }

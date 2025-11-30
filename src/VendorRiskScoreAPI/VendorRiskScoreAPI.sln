@@ -5,6 +5,8 @@ VisualStudioVersion = 17.14.36623.8
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VendorRiskScoreAPI", "VendorRiskScoreAPI.csproj", "{5DB21CEF-8E97-4E42-A77C-534478A9A1C9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VendorRiskScoreAPI.Tests", "..\..\tests\VendorRiskScoreAPI.Tests\VendorRiskScoreAPI.Tests.csproj", "{26BD49AD-803F-49C5-90B1-93AC92665B29}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{5DB21CEF-8E97-4E42-A77C-534478A9A1C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5DB21CEF-8E97-4E42-A77C-534478A9A1C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5DB21CEF-8E97-4E42-A77C-534478A9A1C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{26BD49AD-803F-49C5-90B1-93AC92665B29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26BD49AD-803F-49C5-90B1-93AC92665B29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26BD49AD-803F-49C5-90B1-93AC92665B29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26BD49AD-803F-49C5-90B1-93AC92665B29}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

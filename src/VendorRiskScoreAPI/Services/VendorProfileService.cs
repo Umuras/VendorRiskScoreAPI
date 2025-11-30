@@ -70,9 +70,9 @@ namespace VendorRiskScoreAPI.Services
             await VendorProfileSameNameControl(vendorProfileRequest.Name);
 
             Document document = new Document();
-            document.ContractValid = vendorProfileRequest.Documents.ContractValid;
-            document.PrivacyPolicyValid = vendorProfileRequest.Documents.PrivacyPolicyValid;
-            document.PentestReportValid = vendorProfileRequest.Documents.PentestReportValid;
+            document.ContractValid = vendorProfileRequest.Document.ContractValid;
+            document.PrivacyPolicyValid = vendorProfileRequest.Document.PrivacyPolicyValid;
+            document.PentestReportValid = vendorProfileRequest.Document.PentestReportValid;
 
             List<VendorSecurityCert> vendorSecurityCerts = new List<VendorSecurityCert>();
             vendorSecurityCerts = CheckVendorProfileSecurityCertificates(vendorProfileRequest);
@@ -138,9 +138,9 @@ namespace VendorRiskScoreAPI.Services
             VendorProfile dbVendorProfile = await GetVendorProfileByIdAsync(id);
 
             Domain.Entities.Document dbDocument = await _documentService.GetDocumentByIdAsync(dbVendorProfile.Document.Id);
-            dbDocument.ContractValid = vendorProfileRequest.Documents.ContractValid;
-            dbDocument.PrivacyPolicyValid = vendorProfileRequest.Documents.PrivacyPolicyValid;
-            dbDocument.PentestReportValid = vendorProfileRequest.Documents.PentestReportValid;
+            dbDocument.ContractValid = vendorProfileRequest.Document.ContractValid;
+            dbDocument.PrivacyPolicyValid = vendorProfileRequest.Document.PrivacyPolicyValid;
+            dbDocument.PentestReportValid = vendorProfileRequest.Document.PentestReportValid;
 
 
             if (vendorProfileRequest.Name != null && vendorProfileRequest.Name != dbVendorProfile.Name)
@@ -169,7 +169,7 @@ namespace VendorRiskScoreAPI.Services
                 dbVendorProfile.MajorIncidents = vendorProfileRequest.MajorIncidents;
             }
 
-            if(vendorProfileRequest.Documents != null)
+            if(vendorProfileRequest.Document != null)
             {
                 dbVendorProfile.Document = dbDocument;
             }

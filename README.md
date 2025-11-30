@@ -213,6 +213,12 @@ Ek Bilgiler
 - API, CRUD işlemleri için transaction ve veri bütünlüğü kontrolleri sağlar.
 - Response DTO’lar ve Request DTO’lar ayrı tutulur; örneğin VendorProfileResponseDto, request sırasında id gönderilemeyeceği için kullanılır.
 
+### Notlar / Known Issues
+
+- ELK (Elasticsearch, Logstash, Kibana) stack’i yerel ortamda çalıştırılamadı. 
+- API ve diğer modüller ELK olmadan başarılı şekilde build edilip çalıştırılabilir.
+- Log ve analizler için ELK entegrasyonu eksik / stub olarak bırakılmıştır.
+
 
 
 

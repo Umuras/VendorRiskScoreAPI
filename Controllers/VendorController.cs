@@ -6,7 +6,7 @@ using VendorRiskScoreAPI.Services;
 namespace VendorRiskScoreAPI.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/vendor")]
     public class VendorController : ControllerBase
     {
         private readonly IVendorProfileService _vendorProfileService;
@@ -23,7 +23,7 @@ namespace VendorRiskScoreAPI.Controllers
             _logger = logger;
         }
 
-        [HttpGet]
+        [HttpGet("allprofiles")]
         public async Task<IActionResult> GetAllVendorProfiles()
         {
             _logger.LogInformation("Getting all vendor profiles...");

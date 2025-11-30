@@ -1,4 +1,5 @@
 ﻿using VendorRiskScoreAPI.Domain.Entities;
+using VendorRiskScoreAPI.Domain.ValueObjects;
 using VendorRiskScoreAPI.Dtos;
 
 namespace VendorRiskScoreAPI.Services
@@ -10,9 +11,11 @@ namespace VendorRiskScoreAPI.Services
         Task AddRiskAssessmentAsync(RiskAssessment riskAssessment);
         Task UpdateRiskAssessmentAsync(int id, RiskAssessment riskAssessment);
         Task DeleteRiskAssessmentAsync(int id);
-        double CalculateFinalScore(int financialHealth, int slaUpTime, int majorIncidents,
+        decimal CalculateFinalScore(int financialHealth, int slaUpTime, int majorIncidents,
            List<VendorSecurityCert> vendorSecurityCerts, Domain.Entities.Document document);
-        string CalculateRiskLevel(double riskScore);
+        string CalculateRiskLevel(decimal riskScore);
         Task<RiskAssessmentResponseDto> CreateRiskAssessmentResult(VendorProfile vendorProfile);
+        Task<RiskScores> CalculateVendorProfileRiskScores(string vendorProfileName, int financialHealth, int slaUpTime, int majorIncidents,
+           List<VendorSecurityCert> vendorSecurityCerts, Domain.Entities.Document document);
     }
 }

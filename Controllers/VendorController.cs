@@ -11,12 +11,15 @@ namespace VendorRiskScoreAPI.Controllers
     {
         private readonly IVendorProfileService _vendorProfileService;
         private readonly IRiskAssessmentService _riskAssessmentService;
+        private readonly IVendorProfileRiskScoreService _vendorProfileRiskScoreService;
         private readonly ILogger<VendorController> _logger;
 
-        public VendorController(IVendorProfileService vendorProfileService, IRiskAssessmentService riskAssessmentService, ILogger<VendorController> logger)
+        public VendorController(IVendorProfileService vendorProfileService, IRiskAssessmentService riskAssessmentService, 
+           IVendorProfileRiskScoreService vendorProfileRiskScoreService, ILogger<VendorController> logger)
         {
             _vendorProfileService = vendorProfileService;
             _riskAssessmentService = riskAssessmentService;
+            _vendorProfileRiskScoreService = vendorProfileRiskScoreService;
             _logger = logger;
         }
 
@@ -84,6 +87,16 @@ namespace VendorRiskScoreAPI.Controllers
             await _vendorProfileService.DeleteVendorProfile(id);
             _logger.LogInformation("VendorProfile deleted successfully.");
             return NoContent();
+        }
+
+        [HttpGet("{vendorId}/riskscores")]
+        public async Task<IActionResult> GetVendorProfileRiskScoresResult(int vendorId)
+        {
+            _logger.LogInformation($"Creating VendorProfile Risk Scores Result for this id:{vendorId}");
+            VendorProfile vendorProfile = await _vendorProfileService.GetVendorProfileByIdAsync(vendorId);
+            VendorProfileRiskScoreResponseDto vendorProfileRiskScoreResponse = await _vendorProfileRiskScoreService.CreateVendorProfileRiskScoreResponseDto(vendorProfile);
+
+            return Ok(vendorProfileRiskScoreResponse);
         }
     }
 }

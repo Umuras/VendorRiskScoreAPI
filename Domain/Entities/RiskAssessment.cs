@@ -6,7 +6,7 @@ namespace VendorRiskScoreAPI.Domain.Entities
     {
         [Key]
         public int Id { get; set; }
-        public float RiskScore { get; set; }
+        public decimal RiskScore { get; set; }
         public string RiskLevel { get; set; }
 
         //ForeignKey

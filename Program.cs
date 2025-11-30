@@ -26,6 +26,8 @@ builder.Services.AddScoped<IDocumentService, DocumentService>();
 builder.Services.AddScoped<IRiskAssessmentRepository, RiskAssessmentRepository>();
 builder.Services.AddScoped<IRiskAssessmentService, RiskAssessmentService>();
 builder.Services.AddScoped<IRuleEngineService, RuleEngineService>();
+builder.Services.AddScoped<IVendorProfileRiskScoreRepository, VendorProfileRiskScoreRepository>();
+builder.Services.AddScoped<IVendorProfileRiskScoreService, VendorProfileRiskScoreService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

@@ -5,63 +5,63 @@ namespace VendorRiskScoreAPI.Services
 {
     public class RuleEngineService : IRuleEngineService
     {
-        public float CalculateFinancialRisk(int financialHealth)
+        public decimal CalculateFinancialRisk(int financialHealth)
         {
             if(financialHealth < 50)
             {
-                return 0.8f; //High risk score
+                return 0.8m; //High risk score
             }
 
             if(financialHealth > 80)
             {
-                return 0.2f; //Low risk score
+                return 0.2m; //Low risk score
             }
 
-            return 0.5f; //Medium risk score
+            return 0.5m; //Medium risk score
         }
 
-        public float CalculateOperationalRisk(int slaUpTime, int majorIncidents)
+        public decimal CalculateOperationalRisk(int slaUpTime, int majorIncidents)
         {
-            float slaUpTimeScore = 0;
-            float majorIncidentsScore = 0;
+            decimal slaUpTimeScore = 0;
+            decimal majorIncidentsScore = 0;
 
             if(slaUpTime >= 95)
             {
-                slaUpTimeScore = 0.2f;
+                slaUpTimeScore = 0.2m;
             }else if(slaUpTime >= 90 && slaUpTime < 95)
             {
-                slaUpTimeScore = 0.5f;
+                slaUpTimeScore = 0.5m;
             }else if(slaUpTime < 90)
             {
-                slaUpTimeScore = 0.8f;
+                slaUpTimeScore = 0.8m;
             }
 
             if(majorIncidents >= 0 &&  majorIncidents <= 1)
             {
-                majorIncidentsScore = 0.2f;
+                majorIncidentsScore = 0.2m;
             }else if(majorIncidents <= 3)
             {
-                majorIncidentsScore = 0.5f;
+                majorIncidentsScore = 0.5m;
             }
             else
             {
-                majorIncidentsScore = 0.8f;
+                majorIncidentsScore = 0.8m;
             }
 
-            float sumScore = slaUpTimeScore + majorIncidentsScore;
-            float avgScore = (sumScore / 2);
+            decimal sumScore = slaUpTimeScore + majorIncidentsScore;
+            decimal avgScore = (sumScore / 2);
 
             return avgScore;
         }
 
-        public float CalculateSecurityComplianceRisk(List<VendorSecurityCert> vendorSecurityCerts, Document document)
+        public decimal CalculateSecurityComplianceRisk(List<VendorSecurityCert> vendorSecurityCerts, Document document)
         {
-            float securityCertRiskScore = 0.0f;
+            decimal securityCertRiskScore = 0.0m;
             bool hasISO27001 = false;
             bool hasSOC2 = false;
             bool hasPCI_DSS = false;
 
-            float documentRiskScore = 0.0f;
+            decimal documentRiskScore = 0.0m;
 
             if (vendorSecurityCerts.Count > 0)
             {
@@ -84,31 +84,31 @@ namespace VendorRiskScoreAPI.Services
 
             if(!hasISO27001)
             {
-                securityCertRiskScore += 0.2f;
+                securityCertRiskScore += 0.2m;
             }
             if(!hasSOC2)
             {
-                securityCertRiskScore += 0.2f;
+                securityCertRiskScore += 0.2m;
             }
             if(!hasPCI_DSS)
             {
-                securityCertRiskScore += 0.2f;
+                securityCertRiskScore += 0.2m;
             }
 
             if(!document.ContractValid)
             {
-                documentRiskScore += 0.2f;
+                documentRiskScore += 0.2m;
             }
             if (!document.PrivacyPolicyValid)
             {
-                documentRiskScore += 0.2f;
+                documentRiskScore += 0.2m;
             }
             if(!document.PentestReportValid)
             {
-                documentRiskScore += 0.2f;
+                documentRiskScore += 0.2m;
             }
 
-            float sumFinalSecurityComplianceScore = securityCertRiskScore + documentRiskScore;
+            decimal sumFinalSecurityComplianceScore = securityCertRiskScore + documentRiskScore;
 
             if(sumFinalSecurityComplianceScore > 1)
             {

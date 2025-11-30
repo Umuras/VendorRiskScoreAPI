@@ -16,5 +16,7 @@ namespace VendorRiskScoreAPI.Domain.Entities
         public Document Document { get; set; }
         //Navigation Property
         public RiskAssessment RiskAssessment { get; set; }
+        //Navigtaion Property
+        public VendorProfileRiskScore VendorProfileRiskScore { get; set; }
     }
 }

@@ -1,8 +1,7 @@
-﻿namespace VendorRiskScoreAPI.Dtos
+﻿namespace VendorRiskScoreAPI.Domain.ValueObjects
 {
-    public class VendorProfileRiskScoreResponseDto
+    public class RiskScores
     {
-        public string Vendor { get; set; }
         public decimal Financial { get; set; }
         public decimal Operational { get; set; }
         public decimal Security { get; set; }

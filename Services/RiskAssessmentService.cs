@@ -2,6 +2,7 @@
 using System.Reflection.Metadata;
 using VendorRiskScoreAPI.Data;
 using VendorRiskScoreAPI.Domain.Entities;
+using VendorRiskScoreAPI.Domain.ValueObjects;
 using VendorRiskScoreAPI.Dtos;
 using VendorRiskScoreAPI.Repositories;
 
@@ -119,26 +120,26 @@ namespace VendorRiskScoreAPI.Services
             }
         }
 
-        public double CalculateFinalScore(int financialHealth, int slaUpTime, int majorIncidents,
+        public decimal CalculateFinalScore(int financialHealth, int slaUpTime, int majorIncidents,
            List<VendorSecurityCert> vendorSecurityCerts, Domain.Entities.Document document)
         {
-            double finalScore = (_ruleEngineService.CalculateFinancialRisk(financialHealth) * 0.4) +
-                (_ruleEngineService.CalculateOperationalRisk(slaUpTime, majorIncidents) * 0.3) +
-                (_ruleEngineService.CalculateSecurityComplianceRisk(vendorSecurityCerts, document) * 0.3);
+            decimal finalScore = (_ruleEngineService.CalculateFinancialRisk(financialHealth) * 0.4m) +
+                (_ruleEngineService.CalculateOperationalRisk(slaUpTime, majorIncidents) * 0.3m) +
+                (_ruleEngineService.CalculateSecurityComplianceRisk(vendorSecurityCerts, document) * 0.3m);
             return finalScore;
         }
 
-        public string CalculateRiskLevel(double riskScore)
+        public string CalculateRiskLevel(decimal riskScore)
         {
-            if (riskScore >= 0.00 && riskScore <= 0.33)
+            if (riskScore >= 0.00m && riskScore <= 0.33m)
             {
                 return "Low";
             }
-            else if (riskScore >= 0.34 && riskScore <= 0.70)
+            else if (riskScore >= 0.34m && riskScore <= 0.70m)
             {
                 return "Medium";
             }
-            else if(riskScore >= 0.71 && riskScore <= 1.00)
+            else if(riskScore >= 0.71m && riskScore <= 1.00m)
             {
                 return "High";
             }else
@@ -166,5 +167,26 @@ namespace VendorRiskScoreAPI.Services
 
             return riskAssessmentResponseDto;
         }
+
+        public Task<RiskScores> CalculateVendorProfileRiskScores(string vendorProfileName, int financialHealth, int slaUpTime, int majorIncidents,
+           List<VendorSecurityCert> vendorSecurityCerts, Domain.Entities.Document document)
+        {
+            decimal financialRisk = (_ruleEngineService.CalculateFinancialRisk(financialHealth) * 0.4m);
+            decimal operationalRisk = (_ruleEngineService.CalculateOperationalRisk(slaUpTime, majorIncidents) * 0.3m);
+            decimal securityRisk = (_ruleEngineService.CalculateSecurityComplianceRisk(vendorSecurityCerts, document) * 0.3m);
+            decimal finalScore = CalculateFinalScore(financialHealth, slaUpTime, majorIncidents, vendorSecurityCerts, document);
+
+            RiskScores riskScores = new RiskScores()
+            {
+                Financial = financialRisk,
+                Operational = operationalRisk,
+                Security = securityRisk,
+                FinalScore = finalScore
+            };
+
+            return Task.FromResult(riskScores);
+        }
+
+
     }
 }

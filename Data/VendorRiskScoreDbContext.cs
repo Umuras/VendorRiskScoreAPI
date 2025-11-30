@@ -11,6 +11,7 @@ namespace VendorRiskScoreAPI.Data
         public DbSet<Document> Documents { get; set; }
         public DbSet<VendorSecurityCert> VendorSecurityCerts { get; set; }
         public DbSet<RiskAssessment> RiskAssessments { get; set; }
+        public DbSet<VendorProfileRiskScore> VendorProfileRiskScores { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -18,6 +19,7 @@ namespace VendorRiskScoreAPI.Data
             ConfigureVendorSecurityCert(modelBuilder);
             ConfigureDocument(modelBuilder);
             ConfigureRiskAssessment(modelBuilder);
+            ConfigureVendorProfileRiskScore(modelBuilder);
         }
 
         private void ConfigureVendorProfile(ModelBuilder modelBuilder)
@@ -127,6 +129,7 @@ namespace VendorRiskScoreAPI.Data
 
                 entity.Property(r => r.RiskScore)
                       .HasColumnName("risk_score")
+                      .HasColumnType("decimal(5,4)")
                       .IsRequired();
 
                 entity.Property(r => r.RiskLevel)
@@ -141,6 +144,48 @@ namespace VendorRiskScoreAPI.Data
                 entity.HasOne(r => r.VendorProfile)
                       .WithOne(v => v.RiskAssessment)
                       .HasForeignKey<RiskAssessment>(r => r.VendorId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+        }
+
+        private void ConfigureVendorProfileRiskScore(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<VendorProfileRiskScore>(entity =>
+            {
+                entity.ToTable("vendor_profile_risk_score")
+                      .HasKey(vprs => vprs.Id);
+
+                entity.Property(vprs => vprs.Id)
+                      .IsRequired()
+                      .HasColumnName("id");
+
+                entity.Property(vprs => vprs.Financial)
+                      .HasColumnName("financial")
+                      .HasColumnType("decimal(5,4)")
+                      .IsRequired();
+
+                entity.Property(vprs => vprs.Operational)
+                      .HasColumnName("operational")
+                      .HasColumnType("decimal(5,4)")
+                      .IsRequired();
+                
+                entity.Property(vprs => vprs.Security)
+                      .HasColumnName("security")
+                      .HasColumnType("decimal(5,4)")
+                      .IsRequired();
+
+                entity.Property(vprs => vprs.FinalScore)
+                      .HasColumnName("final_score")
+                      .HasColumnType("decimal(5,4)")
+                      .IsRequired();
+
+                entity.Property(vprs => vprs.VendorId)
+                      .IsRequired()
+                      .HasColumnName("vendor_id");
+
+                entity.HasOne(vprs => vprs.VendorProfile)
+                      .WithOne(v => v.VendorProfileRiskScore)
+                      .HasForeignKey<VendorProfileRiskScore>(vprs => vprs.VendorId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
         }

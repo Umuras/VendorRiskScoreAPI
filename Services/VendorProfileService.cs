@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore.Storage;
+using System.Reflection.Metadata;
 using VendorRiskScoreAPI.Data;
 using VendorRiskScoreAPI.Domain.Entities;
+using VendorRiskScoreAPI.Domain.ValueObjects;
 using VendorRiskScoreAPI.Dtos;
 using VendorRiskScoreAPI.Enums;
 using VendorRiskScoreAPI.Exceptions;
 using VendorRiskScoreAPI.Repositories;
+using Document = VendorRiskScoreAPI.Domain.Entities.Document;
 
 namespace VendorRiskScoreAPI.Services
 {
@@ -16,16 +19,19 @@ namespace VendorRiskScoreAPI.Services
         private readonly IRuleEngineService _ruleEngineService;
         private readonly IRiskAssessmentService _riskAssessmentService;
         private readonly IDocumentService _documentService;
+        private readonly IVendorProfileRiskScoreService _vendorProfileRiskScoreService;
         private HashSet<string> allowedCertifacates = new HashSet<string>();
 
         public VendorProfileService(IVendorProfileRepository vendorProfileRepository, VendorRiskScoreDbContext context,
-            IRuleEngineService ruleEngineService, IRiskAssessmentService riskAssessmentService, IDocumentService documentService)
+            IRuleEngineService ruleEngineService, IRiskAssessmentService riskAssessmentService, IDocumentService documentService,
+            IVendorProfileRiskScoreService vendorProfileRiskScoreService)
         {
             _vendorProfileRepository = vendorProfileRepository;
             _context = context;
             _ruleEngineService = ruleEngineService;
             _riskAssessmentService = riskAssessmentService;
             _documentService = documentService;
+            _vendorProfileRiskScoreService = vendorProfileRiskScoreService;
             Init();
         }
 
@@ -72,11 +78,24 @@ namespace VendorRiskScoreAPI.Services
             vendorSecurityCerts = CheckVendorProfileSecurityCertificates(vendorProfileRequest);
 
             RiskAssessment riskAssessment = new RiskAssessment();
-            double finalScore = _riskAssessmentService.CalculateFinalScore(vendorProfileRequest.FinancialHealth, vendorProfileRequest.SlaUptime, vendorProfileRequest.MajorIncidents,
+            decimal finalScore = _riskAssessmentService.CalculateFinalScore(vendorProfileRequest.FinancialHealth, vendorProfileRequest.SlaUptime, vendorProfileRequest.MajorIncidents,
                 vendorSecurityCerts, document);
 
-            riskAssessment.RiskScore = (float)finalScore;
+            riskAssessment.RiskScore = finalScore;
             riskAssessment.RiskLevel = _riskAssessmentService.CalculateRiskLevel(finalScore);
+
+            RiskScores riskScores = await _riskAssessmentService.CalculateVendorProfileRiskScores(vendorProfileRequest.Name, 
+                vendorProfileRequest.FinancialHealth, vendorProfileRequest.SlaUptime, vendorProfileRequest.MajorIncidents,
+                vendorSecurityCerts, document);
+
+            VendorProfileRiskScore vendorProfileRiskScore = new VendorProfileRiskScore()
+            {
+                VendorName = vendorProfileRequest.Name,
+                Financial = riskScores.Financial,
+                Operational = riskScores.Operational,
+                Security = riskScores.Security,
+                FinalScore = riskScores.FinalScore
+            };
 
             VendorProfile vendorProfile = new VendorProfile()
             {
@@ -86,7 +105,8 @@ namespace VendorRiskScoreAPI.Services
                 SlaUpTime = vendorProfileRequest.SlaUptime,
                 Document = document,
                 SecurityCerts = vendorSecurityCerts,
-                RiskAssessment = riskAssessment
+                RiskAssessment = riskAssessment,
+                VendorProfileRiskScore = vendorProfileRiskScore
             };
 
             using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
@@ -117,7 +137,7 @@ namespace VendorRiskScoreAPI.Services
 
             VendorProfile dbVendorProfile = await GetVendorProfileByIdAsync(id);
 
-            Document dbDocument = await _documentService.GetDocumentByIdAsync(dbVendorProfile.Document.Id);
+            Domain.Entities.Document dbDocument = await _documentService.GetDocumentByIdAsync(dbVendorProfile.Document.Id);
             dbDocument.ContractValid = vendorProfileRequest.Documents.ContractValid;
             dbDocument.PrivacyPolicyValid = vendorProfileRequest.Documents.PrivacyPolicyValid;
             dbDocument.PentestReportValid = vendorProfileRequest.Documents.PentestReportValid;
@@ -155,13 +175,23 @@ namespace VendorRiskScoreAPI.Services
             }
 
             RiskAssessment dbRiskAssessment = await _riskAssessmentService.GetRiskAssessmentByIdAsync(dbVendorProfile.RiskAssessment.Id);
-            double finalScore = _riskAssessmentService.CalculateFinalScore(vendorProfileRequest.FinancialHealth, vendorProfileRequest.SlaUptime, vendorProfileRequest.MajorIncidents,
+            decimal finalScore = _riskAssessmentService.CalculateFinalScore(vendorProfileRequest.FinancialHealth, vendorProfileRequest.SlaUptime, vendorProfileRequest.MajorIncidents,
                 vendorSecurityCerts, dbDocument);
 
-            dbRiskAssessment.RiskScore = (float)finalScore;
+            dbRiskAssessment.RiskScore = finalScore;
             dbRiskAssessment.RiskLevel = _riskAssessmentService.CalculateRiskLevel(finalScore);
 
             dbVendorProfile.RiskAssessment = dbRiskAssessment;
+
+            VendorProfileRiskScore dbVendorProfileRiskScore = await _vendorProfileRiskScoreService.GetVendorProfileRiskScoreByIdAsync(dbVendorProfile.VendorProfileRiskScore.Id);
+            RiskScores riskScores = await _riskAssessmentService.CalculateVendorProfileRiskScores(vendorProfileRequest.Name,
+                vendorProfileRequest.FinancialHealth, vendorProfileRequest.SlaUptime, vendorProfileRequest.MajorIncidents,
+                vendorSecurityCerts, dbDocument);
+
+            dbVendorProfileRiskScore.Financial = riskScores.Financial;
+            dbVendorProfileRiskScore.Operational = riskScores.Operational;
+            dbVendorProfileRiskScore.Security = riskScores.Security;
+            dbVendorProfileRiskScore.FinalScore = riskScores.FinalScore;
 
             using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -210,11 +240,10 @@ namespace VendorRiskScoreAPI.Services
                 Vendor = vendorProfile.Name,
                 Financial = _ruleEngineService.CalculateFinancialRisk(vendorProfile.FinancialHealth),
                 Operational = _ruleEngineService.CalculateOperationalRisk(vendorProfile.SlaUpTime, vendorProfile.MajorIncidents),
-                Security = _ruleEngineService.CalculateSecurityComplianceRisk(vendorSecurityCerts, vendorProfile.Document)
+                Security = _ruleEngineService.CalculateSecurityComplianceRisk(vendorSecurityCerts, vendorProfile.Document),
+                FinalScore = _riskAssessmentService.CalculateFinalScore(vendorProfile.FinancialHealth, vendorProfile.SlaUpTime,
+                vendorProfile.MajorIncidents, vendorSecurityCerts, vendorProfile.Document)
             };
-
-            vendorProfileRiskScoreResponseDto.FinalScore = (vendorProfileRiskScoreResponseDto.Financial * 0.4) + (vendorProfileRiskScoreResponseDto.Operational * 0.3) +
-                (vendorProfileRiskScoreResponseDto.Security * 0.3);
 
             return vendorProfileRiskScoreResponseDto;
         }
